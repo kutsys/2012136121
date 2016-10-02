@@ -1,0 +1,189 @@
+# ~/.bashrc: executed by bash(1) for non-login shells.
+// ~/.bashrc는 비로그인 쉘을 위해서 bash(1)에 의해서 실행된다.
+# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
+// bash-doc 패키지의 /usr/share/doc/bash/examples/startup-files를 보라
+# for examples
+// 예를 들면
+# If not running interactively, don't do anything
+// 상호작용하여 동작하지않는다면, 아무것도 일어나지 않을것이다.
+case $- in 
+
+    *i*) ;;
+
+      *) return;;
+
+esac
+
+# don't put duplicate lines or lines starting with space in the history.
+// 중복된 라인과 히스토리의 시작지점에 빈공간을 넣지않는다.
+# See bash(1) for more options
+// bash(1)의 더많은 옵션을 보라
+HISTCONTROL=ignoreboth // ignorespace, ignoredups의 옵션을 결한한 옵션으로 공백이나 탭, 마지막 입력라인과 일치하는
+		       // 라인을 입력하지않는다.
+
+# append to the history file, don't overwrite it
+// 히스토리파일을 추가하며, 그것을 덮어쓰지않는다
+shopt -s histappend // histroty를 추가하는 문장
+
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+// 히스토리 길이 설정에있어서, bash(1)의 HISTSIZE, HISTFILESIZE를 보아라
+HISTSIZE=1000  // histroy에서  기억되는 명령어의 수. 마지막으로부터 입력된 값만큼 기억된다.
+
+HISTFILESIZE=2000  // history 혹은 HISTFILE에 저장한 파일에 기록되는 최대 명령어의 수이다.
+
+# check the window size after each command and, if necessary,
+// 필요하다면 명령어 이후 윈도우사이즈를 체크하여라
+# update the values of LINES and COLUMNS.
+// 행과 열의 값을 업데이트한다
+shopt -s checkwinsize // 명령어에 윈도우 사이즈를 체크하고 필요하다면 LINES와 COLUMNS 변수의 값을 변경
+
+# If set, the pattern "**" used in a pathname expansion context will
+// 경로에 **가 들어가있다면
+# match all files and zero or more directories and subdirectories.
+// 모든파일 그리고 0개부터 많은 디렉터리와 서브디렉터리와 비교할것이다.
+#shopt -s globstar // 모든 디렉터리를 보게 해준다
+
+# make less more friendly for non-text input files, see lesspipe(1)
+// less는 비텍스트 파일에대해 더 친화적으로 만든다, lesspile(1)을 보라
+
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# set variable identifying the chroot you work in (used in the prompt below)
+// 당신이 사용하는 chroot를 식별하는 변수를 설정한다(사용중인 프롬프트 밑에서)
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+
+    debian_chroot=$(cat /etc/debian_chroot)
+
+fi
+
+# set a fancy prompt (non-color, unless we know we "want" color)
+// 화려한 프롬프트를 설정(비색상, 당신이 색이 필요없다는 걸 안다면)
+case "$TERM" in // $TERM 이후에 색이 들어간 프롬프트로 함
+
+    xterm-color) color_prompt=yes;;
+
+esac
+
+# uncomment for a colored prompt, if the terminal has the capability; turned
+// 터미널이 사용가능하다면, 색상이있는 프롬프트를 사용한다.
+# off by default to not distract the user: the focus in a terminal window
+// 유저에게 혼란을 주지않기위해 디폴트를 해제한다. 터미널창에 집중한다.
+# should be on the output of commands, not on the prompt
+// 명령어의 결과물이면 프롬프트가 아니다.
+#force_color_prompt=yes
+
+if [ -n "$force_color_prompt" ]; then // 
+
+    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+
+    # We have color support; assume it's compliant with Ecma-48
+
+    # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+
+    # a case would tend to support setf rather than setaf.)
+
+    color_prompt=yes
+
+    else
+
+    color_prompt=
+
+    fi
+
+fi
+
+if [ "$color_prompt" = yes ]; then // 컬러 프롬프트인 경우 색을 추가하여 표시
+
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+
+else // 그외의 경우
+
+    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+
+fi
+
+unset color_prompt force_color_prompt
+
+# If this is an xterm set the title to user@host:dir
+// 만약 이것이 xterm일경우 제목을  user@host:dir로 설정한다.
+case "$TERM" in
+
+xterm*|rxvt*)
+
+    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+
+    ;;
+
+*)
+
+    ;;
+
+esac
+
+# enable color support of ls and also add handy aliases
+// ls가 색상지원을 사용할수있도록하고 또한 간단한 명령어를 추가한다.
+if [ -x /usr/bin/dircolors ]; then
+
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+
+    alias ls='ls --color=auto'
+
+    #alias dir='dir --color=auto'
+
+    #alias vdir='vdir --color=auto'
+
+    alias grep='grep --color=auto'
+
+    alias fgrep='fgrep --color=auto'
+
+    alias egrep='egrep --color=auto'
+
+fi
+
+# some more ls aliases
+// 좀더 많은 ls 명렁어들
+alias ll='ls -alF'
+
+alias la='ls -A'
+
+alias l='ls -CF'
+
+# Add an "alert" alias for long running commands.  Use like so:
+// 긴 동작시간동안 작동하는 명령를위해 alter를 추가한다. 다음과 같이 사용한다.
+#   sleep 10; alert
+
+alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+
+# Alias definitions.
+// 명렁어 정의
+# You may want to put all your additions into a separate file like
+// ~/.bash_aliases와 같은 특정한 파일에 추가하고싶을지도 모른다. 
+# ~/.bash_aliases, instead of adding them here directly.
+// 여기에 직접추가하는것 대신에
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+// 그렇다면 bash-doc패키지에있는 /usr/share/doc/bash-doc/examples를 보아라
+if [ -f ~/.bash_aliases ]; then
+
+    . ~/.bash_aliases
+
+fi
+
+# enable programmable completion features (you don't need to enable
+// 사용가능한 프로그래밍 특징 (너는 필요로 하지않을것이다 사용가능한 이것들을,
+# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+// 만약 그것을이 모두 in /etc/bash.bashrc와 /etc/profile에서 사용가능하다면
+# sources /etc/bash.bashrc).
+
+if ! shopt -oq posix; then
+
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+
+    . /usr/share/bash-completion/bash_completion
+
+  elif [ -f /etc/bash_completion ]; then
+
+    . /etc/bash_completion
+
+  fi
+
+fi
