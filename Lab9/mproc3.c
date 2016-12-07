@@ -60,7 +60,6 @@ int main()
 		perror("thread create error : ");
 		exit(0);
     	} 
-	srand(time(NULL));
 
 	thr_id2 = pthread_create(&p_thread[1], NULL, pthread_funct, (void *)&num);
   	if (thr_id2 < 0) {
