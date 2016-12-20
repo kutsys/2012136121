@@ -17,11 +17,19 @@ int main(int argc, char* argv[]) {
 	char myPid[16];	
 	sprintf(myPid, "%d", getpid());
 	char consumerPid[MYSHM_SIZE], studentName[MYSHM_SIZE];
+	// shmget function is create shared memory
+	// 0666 | IPC_CREATE is option, No shared memory depending on key create,
+	// but exist then ignore and set file acess mode
+	// return != -1 is success , -1 is fail
 	int shmid = shmget(MYSHM_KEY, MYSHM_SIZE, 0666 | IPC_CREAT);
 	if(shmid==-1) {
 		perror("shmget failed\n");
 		exit(EXIT_FAILURE);
 	}
+	// shmat function is attach shared memory in process
+	// 2nd variable is adrress, nomarlly NULL
+	// 3rd variable is oprtion , SHM_RDONLY is  read only
+	// SHM_RND is 2nd variable is not NULL, set shmaddr is memory page end
 	shm = shmat(shmid, NULL, 0);
 	if(shm == (char*)(-1)) {
 		perror("shmat failed\n");
@@ -30,8 +38,9 @@ int main(int argc, char* argv[]) {
 	char cmdBuf[1024];
 	while(1) {
 		scanf("%s", cmdBuf);
+		// input 'start' program start
 		if(strcmp(cmdBuf, "start")==0) {
-			// write 1.myPid 2.studentId 
+			// write ipc_producer2 pid, student id in shared memory
 			strcpy(shm+1, myPid);
 			shm[0] = PRODUCER_WRITED;
 			while(shm[0]!=ANYONE_WRITED)
@@ -39,7 +48,7 @@ int main(int argc, char* argv[]) {
 			strcpy(shm+1, studentId);
 			shm[0] = PRODUCER_WRITED;
 
-			// read 1.consumerPid 2.studentName
+			// read ipc_consumer2 pid, student name in shared memor
 			while(shm[0]!=CONSUMER_WRITED)
 				sleep(0);
 			strncpy(consumerPid, shm+1, MYSHM_SIZE-1);
