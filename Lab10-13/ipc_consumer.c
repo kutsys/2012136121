@@ -7,7 +7,7 @@
 #include <string.h>
 #include <fcntl.h>
 
-#define PRODUCER_FIFO "/tmp/prdc_fifo"
+#define PRODUCER_FIFO "/tmp/prdc_fifo" 
 #define CONSUMER_FIFO "/tmp/csm_fifo"
 
 
@@ -16,6 +16,8 @@ int main(int argc, char* argv[]) {
 	char myPid[PIPE_BUF+1], producerPid[PIPE_BUF+1], studentId[PIPE_BUF+1];	
 	sprintf(myPid, "%d", getpid());
 	if(access(CONSUMER_FIFO, F_OK)==-1) {
+		// mkfifo function return 0 then sucess make fifo
+		// 0777 is file access mod rwxrwxrwx
 		int res = mkfifo(CONSUMER_FIFO, 0777);
 		if(res!=0) {
 			printf("make fifo failed. exit program...\n");
@@ -24,26 +26,27 @@ int main(int argc, char* argv[]) {
 	}
 	int pipeId = -1;
 	while(1) {
-		// open producer fifo for read
+		// read a producer_fifo pipe
 		pipeId = open(PRODUCER_FIFO, O_RDONLY);
-		if(pipeId==-1) {
+		if(pipeId==-1) { 
 			printf("producer fifo open failed.\n");
 			continue;
 		}
-		// read 1.myPid 2.studentId
+		// read ipc_producer pid, student number in pipe buffer
 		read(pipeId, producerPid, PIPE_BUF);
 		read(pipeId, studentId, PIPE_BUF);
 		close(pipeId);
+		// print read data
 		printf("producer_pid:%s, studnet_id:%s\n", producerPid
 				, studentId);
 
-		// open consumer fifo for write
+		// read a consumer_fifo pipe
 		pipeId = open(CONSUMER_FIFO, O_WRONLY);
 		if(pipeId==-1) {
 			printf("consumer fifo open failed.\n");
 			continue;
 		}
-		// write 1.consumerPid 2.studentName
+		// write ipc_consumer pid, student name in pipe buffer
 		write(pipeId, myPid, PIPE_BUF);
 		write(pipeId, studentName, PIPE_BUF);
 		close(pipeId);
