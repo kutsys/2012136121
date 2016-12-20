@@ -15,16 +15,19 @@ int main(int argc, char* argv[]) {
 	char myPid[PIPE_BUF+1], consumerPid[PIPE_BUF+1], studentName[PIPE_BUF+1];	
 	sprintf(myPid, "%d", getpid());
 	if(access(PRODUCER_FIFO, F_OK)==-1) {
+		// mkfifo function make fifo and return 0 then sucess
+		// 0777 is file acess mode rwx/rwx/rwx
 		int res = mkfifo(PRODUCER_FIFO, 0777);
 		if(res!=0) {
 			printf("make fifo failed. exit program...\n");
 			exit(EXIT_FAILURE);
 		}
 	}
-	char cmdBuf[1024];
+	char cmdBuf[1024]; //comand
 	int pipeId = -1;
 	while(1) {
 		scanf("%s", cmdBuf);
+		// input 'start' then program start
 		if(strcmp(cmdBuf, "start")==0) {
 			// open producer fifo for write
 			pipeId = open(PRODUCER_FIFO, O_WRONLY);
@@ -32,7 +35,7 @@ int main(int argc, char* argv[]) {
 				printf("producer fifo open failed.\n");
 				continue;
 			}
-			// write 1.myPid 2.studentId
+			// write ipc_producer pid, student number in pipe buffer and close pipe
 			write(pipeId, myPid, PIPE_BUF);
 			write(pipeId, studentId, PIPE_BUF);
 			close(pipeId);
@@ -43,10 +46,11 @@ int main(int argc, char* argv[]) {
 				printf("consumer fifo open failed.\n");
 				continue;
 			}
-			// read 1.consumerPid 2.studentName
+			// read ipc_consumer pid, student name in pipe buffer and close pipe
 			read(pipeId, consumerPid, PIPE_BUF);
 			read(pipeId, studentName, PIPE_BUF);
 			close(pipeId);
+			// print read data
 			printf("producer_pid:%s, consumer_pid:%s, student_id:%s, student_name:%s\n", myPid, consumerPid, studentId, studentName);
 		}
 		if(strcmp(cmdBuf, "exit")==0) {
