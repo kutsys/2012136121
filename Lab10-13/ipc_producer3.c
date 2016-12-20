@@ -20,6 +20,9 @@ int main(int argc, char* argv[]) {
 	char myPid[16];	
 	sprintf(myPid, "%d", getpid());
 	char consumerPid[MYMSG_SIZE], studentName[MYMSG_SIZE];
+	// create message queue using msgget() function
+	// IPC_CREATE is option, then exist queue depending key return queue identifier, not exist creat
+	// return -1 is failed create queue
 	int msgKey = msgget(MYMSG_KEY, 0666 | IPC_CREAT);
 	if(msgKey==-1) {
 		perror("msgget failed\n");
@@ -27,13 +30,16 @@ int main(int argc, char* argv[]) {
 	}
 	MyMsg msgBuf; 
 	// clear message queue
+	//IPC_NOWAIT means No message in message queue then return -1
 	while(msgrcv(msgKey, &msgBuf, sizeof(MyMsg)-sizeof(long),
 				0, IPC_NOWAIT)!=-1);
 	char cmdBuf[1024];
 	while(1) {
 		scanf("%s", cmdBuf);
+		// input 'start' then program start
 		if(strcmp(cmdBuf, "start")==0) {
-			// write 1.myPid 2.studentId 
+			// msgsnd function send data in message queue
+			// retun 0 then success
 			msgBuf.msgType = PRODUCER_PUSHED;
 			strcpy(msgBuf.msgBody, myPid);
 			msgsnd(msgKey, &msgBuf, sizeof(MyMsg)-sizeof(long), 0);
@@ -41,7 +47,11 @@ int main(int argc, char* argv[]) {
 			strcpy(msgBuf.msgBody, studentId);
 			msgsnd(msgKey, &msgBuf, sizeof(MyMsg)-sizeof(long), 0);
 
-			// read 1.consumerPid 2.studentName
+			// msgrcv function is receive data 
+			// 4th variable is option, read message queue data
+			// 0 is fist data, + is producer_pushed type's first data
+			// - is abs(-) small data_type's data
+			// 5th variable is read option, not using then 0
 			msgrcv(msgKey, &msgBuf, sizeof(MyMsg)-sizeof(long),
 					CONSUMER_PUSHED, 0);
 			strcpy(consumerPid, msgBuf.msgBody);
